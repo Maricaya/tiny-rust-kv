@@ -1,1 +1,12 @@
-a simple kv storage written in rust
+# a simple kv storage written in rust
+
+1. 设计内存和磁盘
+index - 内存 BTree
+
+fio - 磁盘设计
+将标准文件操作API 进行简单封装
+
+2. 数据读写流程——追加写数据到当前到活跃文件
+写——先写磁盘数据文件，再更新内存索引。
+读——去内存中找索引信息，如果没找到，说明不存在；如果找到了，用id找文件。
+

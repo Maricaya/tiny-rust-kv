@@ -1,11 +1,11 @@
+use crate::errors::{Errors, Result};
+use log::error;
+use parking_lot::RwLock;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::FileExt;
 use std::path::PathBuf;
 use std::sync::Arc;
-use crate::errors::{Errors, Result};
-use log::error;
-use parking_lot::RwLock;
 
 use super::IOManager;
 
@@ -24,10 +24,9 @@ impl FileIO {
             .open(file_name)
         {
             Ok(file) => {
-                return Ok(
-                    FileIO {
-                        fd: Arc::new(RwLock::new(file))
-                    });
+                return Ok(FileIO {
+                    fd: Arc::new(RwLock::new(file)),
+                });
             }
             Err(e) => {
                 error!("failed to open data file: {}", e);
@@ -74,10 +73,10 @@ impl IOManager for FileIO {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use std::fs;
     use std::os::unix::raw::off_t;
     use std::path::PathBuf;
-    use super::*;
 
     #[test]
     fn test_file_io_write() {
