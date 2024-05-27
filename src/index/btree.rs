@@ -2,13 +2,13 @@ use parking_lot::RwLock;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use crate::data::log_record::LogRecordPods;
+use crate::data::log_record::LogRecordPos;
 
 use super::Indexer;
 
 // BTree 索引，主要封装标准库中的 BTreeMap 结构
 pub struct BTree {
-    tree: Arc<RwLock<BTreeMap<Vec<u8>, LogRecordPods>>>,
+    tree: Arc<RwLock<BTreeMap<Vec<u8>, LogRecordPos>>>,
 }
 
 impl BTree {
@@ -20,13 +20,13 @@ impl BTree {
 }
 
 impl Indexer for BTree {
-    fn put(&self, key: Vec<u8>, pos: LogRecordPods) -> bool {
+    fn put(&self, key: Vec<u8>, pos: LogRecordPos) -> bool {
         let mut write_guard = self.tree.write();
         write_guard.insert(key, pos);
         true
     }
 
-    fn get(&self, key: Vec<u8>) -> Option<LogRecordPods> {
+    fn get(&self, key: Vec<u8>) -> Option<LogRecordPos> {
         let read_guard = self.tree.read();
         read_guard.get(&key).copied()
     }
@@ -47,7 +47,7 @@ mod tests {
         let bt = BTree::new();
         let res1 = bt.put(
             "".as_bytes().to_vec(),
-            LogRecordPods {
+            LogRecordPos {
                 file_id: 1,
                 offset: 10,
             },
@@ -56,7 +56,7 @@ mod tests {
 
         let res2 = bt.put(
             "aa".as_bytes().to_vec(),
-            LogRecordPods {
+            LogRecordPos {
                 file_id: 11,
                 offset: 2,
             },
@@ -69,7 +69,7 @@ mod tests {
         let bt = BTree::new();
         let res1 = bt.put(
             "".as_bytes().to_vec(),
-            LogRecordPods {
+            LogRecordPos {
                 file_id: 1,
                 offset: 10,
             },
@@ -78,7 +78,7 @@ mod tests {
 
         let res2 = bt.put(
             "aa".as_bytes().to_vec(),
-            LogRecordPods {
+            LogRecordPos {
                 file_id: 11,
                 offset: 22,
             },
@@ -101,7 +101,7 @@ mod tests {
         let bt = BTree::new();
         let res1 = bt.put(
             "".as_bytes().to_vec(),
-            LogRecordPods {
+            LogRecordPos {
                 file_id: 1,
                 offset: 10,
             },
@@ -110,7 +110,7 @@ mod tests {
 
         let res2 = bt.put(
             "aa".as_bytes().to_vec(),
-            LogRecordPods {
+            LogRecordPos {
                 file_id: 11,
                 offset: 22,
             },

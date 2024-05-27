@@ -1,3 +1,5 @@
+use log::Record;
+
 #[derive(PartialEq)]
 pub enum LogRecordType {
     // 正常 put 的数据
@@ -17,9 +19,15 @@ pub struct LogRecord {
 
 //  数据位置索引信息，描述数据存储到了哪个位置
 #[derive(Copy, Clone, Debug)]
-pub struct LogRecordPods {
+pub struct LogRecordPos {
     pub(crate) file_id: u32,
     pub(crate) offset: u64,
+}
+
+// 从数据文件中读取的 log_record 信息，包含其 size
+pub struct ReadLogRecord {
+    pub(crate) record: LogRecord,
+    pub(crate) size: u64,
 }
 
 impl LogRecord {
