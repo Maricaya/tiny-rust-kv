@@ -1,4 +1,4 @@
-use crate::data::data_file::{DATA_FILE_NAME_SUFFIX, DataFile};
+use crate::data::data_file::{DataFile, DATA_FILE_NAME_SUFFIX};
 use crate::data::log_record::{LogRecord, LogRecordPos, LogRecordType};
 
 use crate::errors::Errors;
@@ -15,8 +15,6 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use log::warn;
-use crate::data::log_record::LogRecordType::DELETED;
-
 
 const INITIAL_FILE_ID: u32 = 0;
 
@@ -43,12 +41,12 @@ impl Engine {
         if !dir_path.is_dir() {
             if let Err(e) = fs::create_dir_all(dir_path.as_path()) {
                 warn!("create database directory err: {}", e);
-                return Err(Errors::FailedToCreateDatabaseDir)
+                return Err(Errors::FailedToCreateDatabaseDir);
             }
         }
 
         // 加载数据文件
-        let mut data_files =load_data_files(dir_path.clone())?;
+        let mut data_files = load_data_files(dir_path.clone())?;
         // 设置 file id 信息
         let mut file_ids = Vec::new();
         for v in data_files.iter() {
@@ -57,8 +55,8 @@ impl Engine {
 
         // 把旧的数据文件保存到 older_files 中
         let mut older_files = HashMap::new();
-        if data_files.len()>1 {
-            for _ in 0..=data_files.len() - 2  {
+        if data_files.len() > 1 {
+            for _ in 0..=data_files.len() - 2 {
                 let file = data_files.pop().unwrap();
                 older_files.insert(file.get_file_id(), file);
             }
@@ -67,7 +65,7 @@ impl Engine {
         // 拿到当前活跃文件，即列表中最后一个文件
         let active_file = match data_files.pop() {
             Some(v) => v,
-            None => DataFile::new(dir_path.clone(), INITIAL_FILE_ID)?
+            None => DataFile::new(dir_path.clone(), INITIAL_FILE_ID)?,
         };
 
         // 构造存储引擎实例
@@ -79,16 +77,9 @@ impl Engine {
             file_ids,
         };
 
-        // 拿到当前活跃文件，即列表中最后一个文件
-        let active_file = match data_files.pop() {
-            Some(v) => v,
-            None => DataFile::new(dir_path.clone(), 0)?
-        };
-
         engine.load_index_from_data_files()?;
 
         Ok(engine)
-
     }
 
     // 存储key/value 数据key不能为空
@@ -167,7 +158,10 @@ impl Engine {
                     // 找不到对应的数据文件，返回错误
                     return Err(Errors::DataFileNotFound);
                 }
-                data_file.unwrap().read_log_record(log_record_pos.offset)?.record
+                data_file
+                    .unwrap()
+                    .read_log_record(log_record_pos.offset)?
+                    .record
             }
         };
 
@@ -238,12 +232,12 @@ impl Engine {
         for (i, file_id) in self.file_ids.iter().enumerate() {
             let mut offset = 0;
             loop {
-                let log_record_res= match *file_id == active_file.get_file_id() {
+                let log_record_res = match *file_id == active_file.get_file_id() {
                     true => active_file.read_log_record(offset),
                     false => {
                         let data_file = older_files.get(file_id).unwrap();
                         data_file.read_log_record(offset)
-                    },
+                    }
                 };
                 let (log_record, size) = match log_record_res {
                     Ok(result) => (result.record, result.size),
@@ -263,8 +257,10 @@ impl Engine {
 
                 // 更新内存索引
                 let ok = match log_record.rec_type {
-                    LogRecordType::NORMAL => self.index.put(log_record.key.to_vec(), log_record_pos),
-                    LogRecordType::DELETED => self.index.delete(log_record.key.to_vec())
+                    LogRecordType::NORMAL => {
+                        self.index.put(log_record.key.to_vec(), log_record_pos)
+                    }
+                    LogRecordType::DELETED => self.index.delete(log_record.key.to_vec()),
                 };
 
                 if !ok {
@@ -272,25 +268,24 @@ impl Engine {
                 }
 
                 // 递增 offset, 下一次读取的时候从新的开始
-                offset += size;
+                offset += size as u64;
             }
             // 设置活跃文件的 offset
             if i == self.file_ids.len() - 1 {
                 active_file.set_write_off(offset);
             }
-
         }
 
         Ok(())
     }
 }
 
-fn load_data_files(dir_path: PathBuf) -> Result<Vec<DataFile>>{
+fn load_data_files(dir_path: PathBuf) -> Result<Vec<DataFile>> {
     let dir = fs::read_dir(dir_path.clone());
     if dir.is_err() {
         return Err(Errors::FailedToReadDatabaseDir);
     }
-    let mut file_ids: Vec<u32> =Vec::new();
+    let mut file_ids: Vec<u32> = Vec::new();
     let mut data_files: Vec<DataFile> = Vec::new();
     for file in dir.unwrap() {
         if let Ok(entry) = file {
@@ -335,7 +330,7 @@ fn check_options(opts: &Options) -> Option<Errors> {
         return Some(Errors::DirPathIsEmpty);
     }
     if opts.data_peth_size <= 0 {
-        return Some(Errors::DataFileSizeTooSmall)
+        return Some(Errors::DataFileSizeTooSmall);
     }
     None
 }

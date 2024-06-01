@@ -75,7 +75,6 @@ impl IOManager for FileIO {
 mod tests {
     use super::*;
     use std::fs;
-    use std::os::unix::raw::off_t;
     use std::path::PathBuf;
 
     #[test]

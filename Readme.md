@@ -18,4 +18,7 @@ fio - 磁盘设计
 根据 bitcask，删除数据也是向数据文件中增加一条记录。类似墓碑值。
 删除内存索引。
 
-5. 
+5. 数据文件逻辑
+补全系统默认 IO read、write、close、sync 方法
+打开数据文件，从数据文件中读取 LogRecord：
+CRC｜TYPE｜KEY SIZE｜VALUE SIZE｜用户存储 KYE｜用户存储 VALUE
