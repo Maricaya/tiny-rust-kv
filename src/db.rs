@@ -53,6 +53,8 @@ impl Engine {
             file_ids.push(v.get_file_id());
         }
 
+        // 将旧的数据文件放在后面，新的数据文件放在第一个位置
+        data_files.reverse();
         // 把旧的数据文件保存到 older_files 中
         let mut older_files = HashMap::new();
         if data_files.len() > 1 {
@@ -186,7 +188,7 @@ impl Engine {
         let mut active_file = self.active_file.write();
 
         // 判断当前活跃文件是否到达了阈值
-        if active_file.get_write_off() + record_len > self.options.data_peth_size {
+        if active_file.get_write_off() + record_len > self.options.data_file_size {
             // 对当前活跃文件 持久化
             active_file.sync()?;
 
@@ -329,7 +331,7 @@ fn check_options(opts: &Options) -> Option<Errors> {
     if dir_path.is_none() || dir_path.unwrap().len() == 0 {
         return Some(Errors::DirPathIsEmpty);
     }
-    if opts.data_peth_size <= 0 {
+    if opts.data_file_size <= 0 {
         return Some(Errors::DataFileSizeTooSmall);
     }
     None

@@ -22,3 +22,5 @@ fio - 磁盘设计
 补全系统默认 IO read、write、close、sync 方法
 打开数据文件，从数据文件中读取 LogRecord：
 CRC｜TYPE｜KEY SIZE｜VALUE SIZE｜用户存储 KYE｜用户存储 VALUE
+
+6. LogRecord 编解码
