@@ -8,6 +8,9 @@ pub enum LogRecordType {
 
     // 被删除的数据标识，墓碑值
     DELETED = 2,
+
+    // 事务完成的标志
+    TXNFINISHED = 3,
 }
 
 // LogRecord 写入到数据文件的记录
@@ -31,6 +34,12 @@ pub struct LogRecordPos {
 pub struct ReadLogRecord {
     pub(crate) record: LogRecord,
     pub(crate) size: usize,
+}
+
+// 暂存事务数据信息
+pub struct TransactionRecord {
+    pub(crate) record: LogRecord,
+    pub(crate) pos: LogRecordPos,
 }
 
 impl LogRecord {
@@ -67,20 +76,20 @@ impl LogRecord {
         // 计算并存储 CRC 校验值
         let mut hasher = crc32fast::Hasher::new();
         hasher.update(&buf);
-        let crc  = hasher.finalize();
+        let crc = hasher.finalize();
         buf.put_u32(crc);
 
-        (buf.to_vec(),crc)
+        (buf.to_vec(), crc)
     }
 
     // LogRecord 编码后的长度
     fn encoded_length(&self) -> usize {
         std::mem::size_of::<u8>()
-        + length_delimiter_len(self.key.len())
-        + length_delimiter_len(self.value.len())
-        + self.key.len()
-        + self.value.len()
-        + 4
+            + length_delimiter_len(self.key.len())
+            + length_delimiter_len(self.value.len())
+            + self.key.len()
+            + self.value.len()
+            + 4
     }
 }
 
@@ -89,6 +98,7 @@ impl LogRecordType {
         match v {
             1 => LogRecordType::NORMAL,
             2 => LogRecordType::DELETED,
+            3 => LogRecordType::TXNFINISHED,
             _ => panic!("unknown log record type"),
         }
     }
@@ -112,7 +122,7 @@ mod tests {
             rec_type: LogRecordType::NORMAL,
         };
         let enc1 = rec1.encode();
-        assert!(enc1.len()>5);
+        assert!(enc1.len() > 5);
         assert_eq!(1020360578, rec1.get_crc());
 
         // LogRecord 的 value 为空
@@ -122,7 +132,7 @@ mod tests {
             rec_type: LogRecordType::NORMAL,
         };
         let enc2 = rec2.encode();
-        assert!(enc2.len()>5);
+        assert!(enc2.len() > 5);
         assert_eq!(3756865478, rec2.get_crc());
 
         // 类型为 Deleted 的情况
@@ -132,8 +142,7 @@ mod tests {
             rec_type: LogRecordType::DELETED,
         };
         let enc3 = rec3.encode();
-        assert!(enc3.len()>5);
+        assert!(enc3.len() > 5);
         assert_eq!(1867197446, rec3.get_crc());
     }
-
 }

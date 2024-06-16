@@ -26,10 +26,49 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             dir_path: std::env::temp_dir().join("bitcask-rs"),
-            data_file_size: 256*1024*1024, // 256MB
+            data_file_size: 256 * 1024 * 1024, // 256MB
             sync_writes: false,
             index_type: IndexType::BTree,
-
         }
     }
+}
+
+// 索引迭代配置项
+pub struct IteratorOptions {
+    pub prefix: Vec<u8>,
+    pub reverse: bool,
+}
+
+impl Default for IteratorOptions {
+    fn default() -> Self {
+        Self {
+            prefix: Default::default(),
+            reverse: false,
+        }
+    }
+}
+
+// 批量写数据配置项
+pub struct WriteBatchOptions {
+    // 一个批次当中最大数据量
+    pub max_batch_num: usize,
+    // 提交时候是否进行 sync 持久化
+    pub sync_writes: bool,
+}
+
+impl Default for WriteBatchOptions {
+    fn default() -> Self {
+        Self {
+            max_batch_num: 10000,
+            sync_writes: true,
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum IOType {
+    // 标准文件 IO
+    StandardFIO,
+    // 内存文件映射
+    // MemoryMap,
 }

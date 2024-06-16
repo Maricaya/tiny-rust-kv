@@ -7,13 +7,15 @@ use std::sync::Arc;
 use crate::errors::{Errors, Result};
 use crate::fio;
 use crate::fio::new_io_manager;
+use crate::options::IOType;
 
-use super::log_record::LogRecordType;
-use super::log_record::LogRecord;
 use super::log_record::max_log_record_header_size;
+use super::log_record::LogRecord;
+use super::log_record::LogRecordType;
 use super::log_record::ReadLogRecord;
 
 pub const DATA_FILE_NAME_SUFFIX: &str = ".data";
+// pub const SEQ_NO_FILE_NAME: &str = "seq-no";
 
 // 数据文件
 pub struct DataFile {
@@ -26,14 +28,26 @@ impl DataFile {
     pub fn new(dir_path: PathBuf, file_id: u32) -> Result<DataFile> {
         // 根据 path 和 id 构造出完整的文件名称
         let file_name = get_data_file_name(dir_path, file_id);
-        let io_manager = new_io_manager(file_name)?;
+        let io_manager = new_io_manager(file_name, IOType::StandardFIO);
         // 初始化 io manager
         Ok(DataFile {
             file_id: Arc::new(RwLock::new(file_id)),
             write_off: Arc::new(RwLock::new(0)),
-            io_manager: Box::new(io_manager),
+            io_manager,
         })
     }
+
+    // 新建或打开存储事务序列号的文件
+    // pub fn new_seq_no_file(dir_path: PathBuf) -> Result<DataFile> {
+    //     let file_name = dir_path.join(SEQ_NO_FILE_NAME);
+    //     let io_manager = new_io_manager(file_name, IOType::StandardFIO);
+    //
+    //     Ok(DataFile {
+    //         file_id: Arc::new(RwLock::new(0)),
+    //         write_off: Arc::new(RwLock::new(0)),
+    //         io_manager,
+    //     })
+    // }
 
     pub fn get_write_off(&self) -> u64 {
         let read_guard = self.write_off.read();
@@ -94,7 +108,6 @@ impl DataFile {
             size: actual_header_size + key_size + value_size + 4,
         })
     }
-
 
     pub fn write(&self, buf: &[u8]) -> Result<usize> {
         let n_bytes = self.io_manager.write(buf)?;

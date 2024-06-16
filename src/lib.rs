@@ -1,13 +1,12 @@
 mod data;
 pub mod db;
+#[cfg(test)]
+mod db_test;
 mod errors;
 mod fio;
 mod index;
 mod util;
-#[cfg(test)]
-mod db_test;
 
-
+pub mod batch;
+pub mod iterator;
 pub mod options;
-
-

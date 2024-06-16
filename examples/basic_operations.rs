@@ -1,7 +1,7 @@
 use bitcask_rs::{db, options::Options};
 use bytes::Bytes;
 
-fn main () {
+fn main() {
     let opts = Options::default();
     let engine = db::Engine::open(opts).expect("failed to open bitcask engine");
 

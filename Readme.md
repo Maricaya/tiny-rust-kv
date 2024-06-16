@@ -24,3 +24,12 @@ fio - 磁盘设计
 CRC｜TYPE｜KEY SIZE｜VALUE SIZE｜用户存储 KYE｜用户存储 VALUE
 
 6. LogRecord 编解码
+todo()!
+
+7. close/sync/迭代器
+rewind - 重新回到迭代器起点
+seek - 根据传入的 key，查找下一个 key
+next - 跳转到下一个 key
+
+11. 事务的基本概念/WriteBatch 原子写
+MVCC -   
