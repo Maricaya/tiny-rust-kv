@@ -36,9 +36,6 @@ impl Engine {
 impl WriteBatch<'_> {
     // 批量操作写数据
     pub fn put(&self, key: Bytes, value: Bytes) -> Result<()> {
-        // if key.len() == 0 {
-        //     return Err(Errors::KeyIsEmpty);
-        // }
 
         if key.is_empty() {
             return Err(Errors::KeyIsEmpty);
@@ -221,12 +218,12 @@ mod tests {
 
         // 写数据之后未提交
         let put_res1 = wb.put(
-            util::rand_kv::get_test_key(1),
+            util::rand_kv::get_test_key(1).clone(),
             util::rand_kv::get_test_value(10),
         );
         assert!(put_res1.is_ok());
         let put_res2 = wb.put(
-            util::rand_kv::get_test_key(2),
+            util::rand_kv::get_test_key(2).clone(),
             util::rand_kv::get_test_value(10),
         );
         assert!(put_res2.is_ok());
@@ -234,7 +231,7 @@ mod tests {
         assert!(commit_res1.is_ok());
 
         let put_res3 = wb.put(
-            util::rand_kv::get_test_key(1),
+            util::rand_kv::get_test_key(1).clone(),
             util::rand_kv::get_test_value(10),
         );
         assert!(put_res3.is_ok());
@@ -245,13 +242,13 @@ mod tests {
         // 重启之后进行校验
         engine.close().expect("failed to close");
 
-        let enigne2 = Engine::open(opts.clone()).expect("failed to open engine");
-        let keys = enigne2.list_keys();
-        println!("---{:#?}", keys.ok().unwrap());
-        // assert_eq!(2, keys.ok().unwrap().len());
+        let engine2 = Engine::open(opts.clone()).expect("failed to open engine");
+        let keys = engine2.list_keys();
+        // println!("---{:#?}", keys.ok().unwrap());
+        assert_eq!(2, keys.ok().unwrap().len());
         // 验证事务序列号
-        // let seq_no = enigne2.seq_no.load(Ordering::SeqCst);
-        // assert_eq!(3, seq_no);
+        let seq_no = engine2.seq_no.load(Ordering::SeqCst);
+        assert_eq!(3, seq_no);
 
         // 删除测试的文件夹
         std::fs::remove_dir_all(opts.clone().dir_path).expect("failed to remove path");

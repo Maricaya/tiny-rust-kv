@@ -5,7 +5,7 @@ fn main() {
     let opts = Options::default();
     let engine = db::Engine::open(opts).expect("failed to open bitcask engine");
 
-    let res1 = engine.put(Bytes::form("name"), Bytes::from("bitcask-rs"));
+    let res1 = engine.put(Bytes::from("name"), Bytes::from("bitcask-rs"));
     assert!(res1.is_ok());
 
     let res2 = engine.get(Bytes::from("name"));

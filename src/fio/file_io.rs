@@ -111,9 +111,6 @@ mod tests {
         assert!(res2.is_ok());
         assert_eq!(5, res2.ok().unwrap());
 
-        let res3 = fs::remove_file(path.clone());
-        assert!(res3.is_ok());
-
         let mut buf = [0u8; 5];
         let read_res1 = fio.read(&mut buf, 0);
         assert!(read_res1.is_ok());

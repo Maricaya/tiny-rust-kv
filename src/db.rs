@@ -290,7 +290,7 @@ impl Engine {
                         data_file.read_log_record(offset)
                     }
                 };
-                let (log_record, size) = match log_record_res {
+                let (mut log_record, size) = match log_record_res {
                     Ok(result) => (result.record, result.size),
                     Err(e) => {
                         if e == Errors::ReadDataFileEOF {
@@ -326,7 +326,7 @@ impl Engine {
                         }
                         transaction_records.remove(&seq_no);
                     } else {
-                        let _ = log_record.key == real_key;
+                        log_record.key = real_key;
                         transaction_records
                             .entry(seq_no)
                             .or_insert(Vec::new())
