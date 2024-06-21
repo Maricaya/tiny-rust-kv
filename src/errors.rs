@@ -53,6 +53,10 @@ pub enum Errors {
 
     #[error("the database directory is used by another process")]
     DatabaseIsUsing,
+
+    #[error("merge is in progress, try again later")]
+    MergeInProgress,
+
 }
 
 pub type Result<T> = result::Result<T, Errors>;

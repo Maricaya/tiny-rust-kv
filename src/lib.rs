@@ -10,3 +10,4 @@ mod util;
 pub mod batch;
 pub mod iterator;
 pub mod options;
+pub mod merge;
